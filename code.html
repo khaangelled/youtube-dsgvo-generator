@@ -1,39 +1,89 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>YouTube DSGVO Generator + Vorschau</title>
+  <meta charset="UTF-8" />
+  <title>DSGVO-konformer YouTube-Code-Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       max-width: 800px;
       margin: 30px auto;
       padding: 20px;
+      background: #f9f9f9;
     }
     input, textarea, button {
       width: 100%;
       margin: 10px 0;
       padding: 10px;
       font-size: 1rem;
+      box-sizing: border-box;
     }
     button.copy {
       width: auto;
-      margin-top: 0;
       background: #333;
       color: #fff;
       border: none;
       cursor: pointer;
+      padding: 10px 20px;
+      transition: background-color 0.3s ease;
     }
     button.copy:hover {
       background: #000;
     }
-    iframe {
-      margin-top: 20px;
-    }
     #preview {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-top: 20px;
+      margin-top: 30px;
+    }
+    .video-placeholder {
+      position: relative;
+      width: 640px;
+      height: 360px;
+      margin: 30px auto;
+      background-color: #000;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .video-placeholder img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .consent-box {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.75);
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: #eee;
+      width: 90%;
+      max-width: 600px;
+      box-sizing: border-box;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.9rem;
+      z-index: 3;
+    }
+    .consent-box p {
+      margin: 0;
+    }
+    .consent-box button {
+      background-color: #ff0000;
+      border: none;
+      color: white;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    .consent-box button:hover {
+      background-color: #cc0000;
     }
   </style>
 </head>
@@ -42,108 +92,164 @@
 <h2>🔧 DSGVO-konformer YouTube-Code-Generator mit Vorschau</h2>
 
 <label for="youtube-url">YouTube-Link eingeben:</label>
-<input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
+<input
+  type="text"
+  id="youtube-url"
+  placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+/>
 
 <button onclick="generateCode()">Code erzeugen</button>
 
 <label for="output">Dein DSGVO-konformer HTML-Code:</label>
-<textarea id="output" rows="20" readonly></textarea>
+<textarea id="output" rows="15" readonly></textarea>
 <button class="copy" onclick="copyCode()">📋 Code kopieren</button>
 
 <h3>🔍 Vorschau:</h3>
 <div id="preview"></div>
 
 <script>
-function extractVideoID(url) {
-  const regExp = /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = url.match(regExp);
-  return match ? match[1] : null;
-}
-
-function generateCode() {
-  const url = document.getElementById("youtube-url").value.trim();
-  const videoID = extractVideoID(url);
-
-  if (!videoID) {
-    alert("❌ Ungültiger YouTube-Link.");
-    return;
+  // Funktion: Video-ID aus YouTube-URL extrahieren
+  function extractVideoID(url) {
+    const regExp = /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
   }
 
-const html = `
+  // Funktion: Video laden in Vorschau
+  function loadVideo(videoID, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `
+      <iframe width="640" height="360"
+        src="https://www.youtube-nocookie.com/embed/${videoID}?autoplay=1"
+        title="YouTube Video"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>`;
+  }
+
+  // Hauptfunktion: Code generieren
+  function generateCode() {
+    const url = document.getElementById("youtube-url").value.trim();
+    const videoID = extractVideoID(url);
+
+    if (!videoID) {
+      alert("❌ Ungültiger YouTube-Link.");
+      return;
+    }
+
+    // DSGVO-konformer HTML-Code mit Consent-Platzhalter
+    const html = `
 <style>
-  .video-placeholder {
-    position: relative;
-    width: 640px;
-    height: 360px;
-    margin: 30px auto;
-    background-color: #000;
-    text-align: center;
-  }
-  .video-placeholder img {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  .overlay-button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    border: none;
-    padding: 15px 25px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border-radius: 6px;
-    z-index: 2;
-  }
-  .overlay-button:hover {
-    background: rgba(20, 20, 20, 0.9);
-  }
+.video-placeholder {
+  position: relative;
+  width: 640px;
+  height: 360px;
+  margin: 30px auto;
+  background-color: #000;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+.video-placeholder img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.consent-box {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  padding: 15px 20px;
+  border-radius: 8px;
+  color: #eee;
+  width: 90%;
+  max-width: 600px;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.9rem;
+  z-index: 3;
+}
+.consent-box p {
+  margin: 0;
+}
+.consent-box button {
+  background-color: #ff0000;
+  border: none;
+  color: white;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+.consent-box button:hover {
+  background-color: #cc0000;
+}
 </style>
 
 <div class="video-placeholder" id="video-container">
-  <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" alt="Video-Vorschau">
-  <button class="overlay-button" onclick="requestConsent()">🎬 Video aktivieren</button>
+  <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" alt="Video-Vorschau" />
+  <div class="consent-box">
+    <p>Mit dem Klick stimmen Sie zu, dass Daten an YouTube übermittelt werden.</p>
+    <button id="activate-video">🎬 Video aktivieren</button>
+  </div>
 </div>
 
 <script>
-function requestConsent() {
-  if (confirm("Dieses Video wird von YouTube geladen. Dabei können personenbezogene Daten an den Anbieter übertragen werden. Möchtest du fortfahren?")) {
-    loadVideo();
+  document.getElementById('activate-video').addEventListener('click', function() {
+    const container = document.getElementById('video-container');
+    container.innerHTML = \`
+      <iframe width="640" height="360"
+        src="https://www.youtube-nocookie.com/embed/${videoID}?autoplay=1"
+        title="YouTube Video"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>\`;
+  });
+<\/script>
+    `;
+
+    document.getElementById("output").value = html;
+
+    // Vorschau mit eigenem funktionierendem Button
+    document.getElementById("preview").innerHTML = `
+      <div class="video-placeholder" id="video-preview">
+        <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" alt="Video-Vorschau" />
+        <div class="consent-box">
+          <p>Mit dem Klick stimmen Sie zu, dass Daten an YouTube übermittelt werden.</p>
+          <button id="activate-video-preview">🎬 Video aktivieren</button>
+        </div>
+      </div>
+    `;
+
+    // Eventlistener für den Vorschau-Button
+    setTimeout(() => {
+      const previewButton = document.getElementById('activate-video-preview');
+      if(previewButton){
+        previewButton.addEventListener('click', () => {
+          loadVideo(videoID, 'video-preview');
+        });
+      }
+    }, 100);
   }
-}
-function loadVideo() {
-  const container = document.getElementById('video-container');
-  container.innerHTML = \`
-    <iframe width="640" height="360"
-      src="https://www.youtube-nocookie.com/embed/${videoID}"
-      title="YouTube Video"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowfullscreen>
-    </iframe>\`;
-}
-<\/script>`;
 
-
-  document.getElementById("output").value = html;
-
-  // Live Vorschau im Container anzeigen
-  document.getElementById("preview").innerHTML = `
-    <div style="position:relative;width:640px;height:360px;margin:auto;background:#000;">
-      <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" style="width:100%;height:100%;">
-      <button style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:15px 25px;border:none;border-radius:6px;cursor:pointer;" onclick="this.parentElement.innerHTML='<iframe width=\\'640\\' height=\\'360\\' src=\\'https://www.youtube-nocookie.com/embed/${videoID}\\' frameborder=\\'0\\' allowfullscreen></iframe>'">🎬 Video aktivieren</button>
-    </div>`;
-}
-
-function copyCode() {
-  const textarea = document.getElementById("output");
-  textarea.select();
-  document.execCommand("copy");
-  alert("✅ Code wurde kopiert!");
-}
+  // Code kopieren in Zwischenablage
+  function copyCode() {
+    const textarea = document.getElementById("output");
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    alert("✅ Code wurde kopiert!");
+  }
 </script>
 
 </body>

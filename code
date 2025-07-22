@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube DSGVO Generator + Vorschau</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1rem;
+    }
+    button.copy {
+      width: auto;
+      margin-top: 0;
+      background: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button.copy:hover {
+      background: #000;
+    }
+    iframe {
+      margin-top: 20px;
+    }
+    #preview {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🔧 DSGVO-konformer YouTube-Code-Generator mit Vorschau</h2>
+
+<label for="youtube-url">YouTube-Link eingeben:</label>
+<input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID">
+
+<button onclick="generateCode()">Code erzeugen</button>
+
+<label for="output">Dein DSGVO-konformer HTML-Code:</label>
+<textarea id="output" rows="20" readonly></textarea>
+<button class="copy" onclick="copyCode()">📋 Code kopieren</button>
+
+<h3>🔍 Vorschau:</h3>
+<div id="preview"></div>
+
+<script>
+function extractVideoID(url) {
+  const regExp = /(?:youtube\.com.*(?:\?|&)v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
+}
+
+function generateCode() {
+  const url = document.getElementById("youtube-url").value.trim();
+  const videoID = extractVideoID(url);
+
+  if (!videoID) {
+    alert("❌ Ungültiger YouTube-Link.");
+    return;
+  }
+
+const html = `
+<style>
+  .video-placeholder {
+    position: relative;
+    width: 640px;
+    height: 360px;
+    margin: 30px auto;
+    background-color: #000;
+    text-align: center;
+  }
+  .video-placeholder img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .overlay-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border: none;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    z-index: 2;
+  }
+  .overlay-button:hover {
+    background: rgba(20, 20, 20, 0.9);
+  }
+</style>
+
+<div class="video-placeholder" id="video-container">
+  <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" alt="Video-Vorschau">
+  <button class="overlay-button" onclick="requestConsent()">🎬 Video aktivieren</button>
+</div>
+
+<script>
+function requestConsent() {
+  if (confirm("Dieses Video wird von YouTube geladen. Dabei können personenbezogene Daten an den Anbieter übertragen werden. Möchtest du fortfahren?")) {
+    loadVideo();
+  }
+}
+function loadVideo() {
+  const container = document.getElementById('video-container');
+  container.innerHTML = \`
+    <iframe width="640" height="360"
+      src="https://www.youtube-nocookie.com/embed/${videoID}"
+      title="YouTube Video"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>\`;
+}
+<\/script>`;
+
+
+  document.getElementById("output").value = html;
+
+  // Live Vorschau im Container anzeigen
+  document.getElementById("preview").innerHTML = `
+    <div style="position:relative;width:640px;height:360px;margin:auto;background:#000;">
+      <img src="https://img.youtube.com/vi/${videoID}/hqdefault.jpg" style="width:100%;height:100%;">
+      <button style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:15px 25px;border:none;border-radius:6px;cursor:pointer;" onclick="this.parentElement.innerHTML='<iframe width=\\'640\\' height=\\'360\\' src=\\'https://www.youtube-nocookie.com/embed/${videoID}\\' frameborder=\\'0\\' allowfullscreen></iframe>'">🎬 Video aktivieren</button>
+    </div>`;
+}
+
+function copyCode() {
+  const textarea = document.getElementById("output");
+  textarea.select();
+  document.execCommand("copy");
+  alert("✅ Code wurde kopiert!");
+}
+</script>
+
+</body>
+</html>

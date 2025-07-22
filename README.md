@@ -57,8 +57,3 @@ Der generierte Code kann direkt in andere Webseiten eingebunden werden.
 
 ---
 
-## ✅ Lizenz
-
-Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
-
----
